@@ -43,6 +43,7 @@ class DataHandle:
         self.data_manager = DataManager(filename)
         self.data: pd.DataFrame = self.data_manager.read_data()
         self.balance: int = 0
+        self.update_balance_from_data()
         self.err_msg: str = ''
         self.status_code: int = 0
 
@@ -134,7 +135,6 @@ class DataHandle:
         """
         Show current balance on flow
         """
-        self.update_balance_from_data()
         return self.balance
 
     def search_records(self, criteria: dict) -> list:
