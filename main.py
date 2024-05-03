@@ -7,19 +7,21 @@ class TransactionType(Enum):
 
 
 class DataHandle:
-    def __init__(self, initial_amount: int = 0):
-        self.data = []
+    def __init__(self):
+        self.data = [{
+            "Date": "2024-05-02",
+            "Category": TransactionType.COST,
+            "Amount": 1500,
+            "Description": "Products buying"
+        }, {
+            "Date": "2024-05-03",
+            "Category": TransactionType.INCOME,
+            "Amount": 30000,
+            "Description": "Salary"
+        }]
+        self.balance = sum(record["Amount"] for record in self.data)
         self.err_msg = ''
         self.status_code = 0
-        self.initial_amount = initial_amount
-
-        if initial_amount:
-            self.add_record({
-                "Date": "Initial",
-                "Category": TransactionType.INCOME.value,
-                "Amount": initial_amount,
-                "Description": "Initial amount"
-            })
 
     def add_record(self, new_data: dict) -> int:
         is_valid = True
@@ -44,8 +46,7 @@ class DataHandle:
 
         if is_valid:
             self.data.append(new_data)
-
-        if self.data[-1] == new_data:
+            self.balance += new_data["Amount"]
             is_recorded = True
 
         self.status_code = 201 if is_recorded else 400
@@ -57,9 +58,9 @@ class DataHandle:
         is_recorded = False
 
         if new_data:
-            updated_data = data.copy()  # Initialize updated_data with a copy of data
+            updated_data = data.copy()
             for key, val in data.items():
-                if key == 'Amount' and type(new_data.get(key)) is not int:
+                if key == 'Amount' and type(new_data[key]) is not int:
                     self.err_msg = 'Amount is not int'
                     is_valid = False
                     break
@@ -74,41 +75,39 @@ class DataHandle:
             except ValueError:
                 self.status_code = 404
                 self.err_msg = "Record doesn't exist"
-            self.data.append(updated_data)  # Append the updated data
-
-        if self.data[-1] == updated_data:
+            self.data.append(updated_data)
+            self.balance += updated_data["Amount"] - data["Amount"]
             is_recorded = True
+
         self.status_code = 200 if is_recorded else 400
         return self.status_code
 
+    def show_balance(self):
+        return self.balance
+
+    def search_records(self, criteria: dict) -> list:
+        filtered_records = list(
+            filter(lambda record: all(record.get(key) == value for key, value in criteria.items()), self.data))
+        return filtered_records
+
 
 # Example usage:
-new_handle = DataHandle(initial_amount=5000)
+new_handle = DataHandle()
 
 res = new_handle.add_record({
-    "Date": "2024-05-02",
-    "Category": TransactionType.COST.value,
-    "Amount": 1500,
-    "Description": "Products buying"
+    "Date": "2024-05-01",
+    "Category": TransactionType.COST,
+    "Amount": 1000,
+    "Description": "Groceries"
 })
 second_res = new_handle.add_record({
-    "Date": "2024-05-03",
-    "Category": TransactionType.INCOME.value,
-    "Amount": 30000,
-    "Description": "Salary"
+    "Date": "2024-05-05",
+    "Category": TransactionType.INCOME,
+    "Amount": 2000,
+    "Description": "Freelance work"
 })
 
-upd_res = new_handle.update_record({
-    "Date": "2024-05-02",
-    "Category": TransactionType.COST.value,
-    "Amount": 1500,
-    "Description": "Products buying"
-}, {
-    "Amount": 2000
-})
-
-print(res)
-print(second_res)
-print(upd_res)
-print(new_handle.err_msg)
-print(new_handle.data)
+# Search for records with a specific category and amount
+search_criteria = {"Category": TransactionType.INCOME, "Amount": 2000}
+matching_records = new_handle.search_records(search_criteria)
+print("Matching records:", matching_records)
