@@ -1,3 +1,4 @@
+import argparse
 from enum import Enum
 
 
@@ -8,18 +9,8 @@ class TransactionType(Enum):
 
 class DataHandle:
     def __init__(self):
-        self.data = [{
-            "Date": "2024-05-02",
-            "Category": TransactionType.COST,
-            "Amount": 1500,
-            "Description": "Products buying"
-        }, {
-            "Date": "2024-05-03",
-            "Category": TransactionType.INCOME,
-            "Amount": 30000,
-            "Description": "Salary"
-        }]
-        self.balance = sum(record["Amount"] for record in self.data)
+        self.data = []
+        self.balance = 0
         self.err_msg = ''
         self.status_code = 0
 
@@ -56,9 +47,9 @@ class DataHandle:
     def update_record(self, data: dict, new_data: dict) -> int:
         is_valid = True
         is_recorded = False
+        updated_data = data.copy()
 
         if new_data:
-            updated_data = data.copy()
             for key, val in data.items():
                 if key == 'Amount' and type(new_data[key]) is not int:
                     self.err_msg = 'Amount is not int'
@@ -91,23 +82,44 @@ class DataHandle:
         return filtered_records
 
 
-# Example usage:
-new_handle = DataHandle()
+def main():
+    parser = argparse.ArgumentParser(description="CLI app for managing financial records.")
+    parser.add_argument("command", choices=["add", "balance", "search"], help="Command to execute")
 
-res = new_handle.add_record({
-    "Date": "2024-05-01",
-    "Category": TransactionType.COST,
-    "Amount": 1000,
-    "Description": "Groceries"
-})
-second_res = new_handle.add_record({
-    "Date": "2024-05-05",
-    "Category": TransactionType.INCOME,
-    "Amount": 2000,
-    "Description": "Freelance work"
-})
+    args = parser.parse_args()
 
-# Search for records with a specific category and amount
-search_criteria = {"Category": TransactionType.INCOME, "Amount": 2000}
-matching_records = new_handle.search_records(search_criteria)
-print("Matching records:", matching_records)
+    data_handle = DataHandle()
+
+    if args.command == "add":
+        date = input("Enter Date: ")
+        category = input("Enter Category (Income/Cost): ")
+        amount = int(input("Enter Amount: "))
+        description = input("Enter Description: ")
+
+        status_code = data_handle.add_record({
+            "Date": date,
+            "Category": TransactionType[category.upper()],
+            "Amount": amount,
+            "Description": description
+        })
+
+        if status_code == 201:
+            print("Record added successfully.")
+        else:
+            print(f"Error: {data_handle.err_msg}")
+
+    elif args.command == "balance":
+        print(f"Current balance: {data_handle.show_balance()}")
+
+    elif args.command == "search":
+        category = input("Enter Category (Income/Cost): ")
+        amount = int(input("Enter Amount: "))
+        search_criteria = {"Category": TransactionType[category.upper()], "Amount": amount}
+        matching_records = data_handle.search_records(search_criteria)
+        print("Matching records:")
+        for record in matching_records:
+            print(record)
+
+
+if __name__ == "__main__":
+    main()
