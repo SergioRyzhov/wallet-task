@@ -1,0 +1,12 @@
+.idea/
+__pycache__
+.env
+*.env
+
+*_dump_*
+.DS_Store
+.vscode
+venv/
+
+# dev files
+*.sh

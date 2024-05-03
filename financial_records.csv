@@ -1,0 +1,5 @@
+Date,Category,Amount,Description
+2024-05-02,TransactionType.INCOME,50000,Salary
+2024-05-03,TransactionType.COST,5,Newspaper
+2024-05-03,TransactionType.INCOME,70000,Salary
+2024-05-04,TransactionType.COST,1000,For service
