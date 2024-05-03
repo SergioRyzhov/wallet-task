@@ -42,6 +42,8 @@ Replace `<command>` with one of the following options:
 - `balance`: View the current balance.
 - `search`: Search for financial records.
 - `update`: Update an existing financial record.
+- `show_income`: Display all income records.
+- `show_costs`: Display all cost records.
 
 Follow the prompts to input the required information for each command.
 
@@ -82,5 +84,12 @@ Enter Date: 2024-05-05
 Enter Category (Income/Cost): Cost
 Enter Amount: 50
 Enter Description: Grocery
+````
+### View the income or costs:
+````
+python main.py show_income
+````
+````
+python main.py show_costs
 ````
 -------

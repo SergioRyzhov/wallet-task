@@ -146,13 +146,27 @@ class DataHandle:
             filtered_records = filtered_records[filtered_records[key] == value]
         return filtered_records.to_dict('records')
 
+    def show_records(self, transaction_type: TransactionType) -> list:
+        """
+        Show all records with "Income" or "Cost" transaction.
+        """
+        filtered_records = self.data[self.data['Category'] == str(transaction_type)]
+        if filtered_records.empty:
+            print("No income records found.")
+            return []
+        return filtered_records.to_dict('records')
+
 
 def main() -> None:
     """
     Main function to execute CLI commands
     """
     parser = argparse.ArgumentParser(description="CLI app for managing financial records.")
-    parser.add_argument("command", choices=["add", "balance", "search", "update"], help="Command to execute")
+    parser.add_argument(
+        "command",
+        choices=["add", "balance", "search", "update", "show_income", "show_costs"],
+        help="Command to execute"
+    )
 
     args = parser.parse_args()
 
@@ -188,9 +202,10 @@ def main() -> None:
     elif args.command == "balance":
         print(f"Current balance: {data_handle.show_balance()}")
 
-    # command to commit the search by "Category" and "Amount"
+    # command to commit the search by "Category", "Date" and "Amount"
     elif args.command == "search":
         category = input("Enter Category (Income/Cost): ")
+        date = input("Enter date: ")
         amount = int(input("Enter Amount: "))
 
         try:
@@ -198,7 +213,7 @@ def main() -> None:
         except KeyError:
             print("Error: Invalid category. Please enter 'Income' or 'Cost'.")
             return
-        search_criteria = {"Category": str(category_enum), "Amount": amount}
+        search_criteria = {"Category": str(category_enum), "Date": date, "Amount": amount}
         matching_records = data_handle.search_records(search_criteria)
         print("Matching records:")
         for record in matching_records:
@@ -236,6 +251,20 @@ def main() -> None:
             print("Record updated successfully.")
         else:
             print(f"Error: {data_handle.err_msg} (Status Code: {status_code})")
+
+    # command to show income records
+    elif args.command == "show_income":
+        income_records = data_handle.show_records(TransactionType.INCOME)
+        print("Income records:")
+        for record in income_records:
+            print(record)
+
+    # command to show cost records
+    elif args.command == "show_costs":
+        cost_records = data_handle.show_records(TransactionType.COST)
+        print("Cost records:")
+        for record in cost_records:
+            print(record)
 
 
 if __name__ == "__main__":
